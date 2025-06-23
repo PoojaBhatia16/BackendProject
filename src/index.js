@@ -1,17 +1,20 @@
-import express from "express";
+
 import dotenv from "dotenv";
 import connectDB from "./db/index.js";
-
+import { app } from "./app.js";
 // Load environment variables
 dotenv.config({ path: ".env" });
 
-const app = express();
+
+const PORT = process.env.PORT || 8000;
 
 // Connect to MongoDB
-connectDB();
-
-// Start the Express server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Server is running on http://localhost:${PORT}`);
+connectDB().then(()=>{
+  app.listen(PORT, () => {
+    console.log(`✅ Server is running on http://localhost:${PORT}`);
+  });
+}).catch((error)=>{
+  console.log("connection not working failed")
 });
+
+
