@@ -240,6 +240,91 @@ const changeCurrentPassword=asyncHandler(async(req,res,next)=>{
   return res.status(200).json(new ApiResponse(200,{},"password changed successfully"))
 })
 
+const getCurrentUser=asyncHandler(async(req,res,next)=>{
+
+  return res.status(200).json(
+    new ApiResponse(200,req.user,"current user fetched successfully")
+  )
+});
+
+const updateAccoutDetails=asyncHandler(async(req,res,next)=>{
+  const {fullName,email}=req.body;
+
+  if(!fullName||!email)
+  {
+    throw new ApiError(400,"All fields are required")
+  }
+
+  const user=await User.findByIdAndUpdate(req.user?._id,{
+    $set:{
+      fullName,
+      email
+    }
+  },{
+    new:true,
+    select:"-password -refreshToken"
+  })
+
+  if(!user)
+  {
+    throw new ApiError(404,"user not found")
+  }
+
+  return res.status(200).json(new ApiResponse(200,user,"Account details updated successfully"))
+});
+
+const updateUserAvatar = asyncHandler(async (req, res, next) => {
+
+   const avatarLocalPath=req.file?.path;
+  if(!avatarLocalPath)  
+  {
+    throw new ApiError(400,"avatar not found");
+  }
+
+  const avatar=await uploadOnCloudinary(avatarLocalPath);
+
+  if(!avatar.url)
+  {
+    throw new ApiError(400, "Error uploading avatar to cloudinary");
+  }
+  const user=await User.findById(req.user?._id);
+
+  if(!user)
+  {
+    throw new ApiError(404,"user not found")
+  }
+  user.avatar=avatar.url;
+  await user.save({validateBeforeSave:false});
+
+  const updateUserAvatar= await User.findById(user._id).select("-password -refreshToken");
+  return res.status(200).json(new ApiResponse(200,updateUserAvatar,"Avatar updated successfully"));
+});
+
+const UpdateCoverImage = asyncHandler(async (req, res, next) => {
+  const coverImageLocalPath=req.file?.path;
+  if(!coverImageLocalPath)  
+  {
+    throw new ApiError(400,"cover image not found");
+  }
+
+  const coverImage=await uploadOnCloudinary(coverImageLocalPath);
+
+  if(!coverImage.url)
+  {
+    throw new ApiError(400, "Error uploading cover image to cloudinary");
+  }
+  const user=await User.findById(req.user?._id);    
+
+  if(!user)
+  { 
+    throw new ApiError(404,"user not found")
+  }
+  user.coverImage=coverImage.url;
+  await user.save({validateBeforeSave:false});      
+
+  const updatedUserCoverImage = await User.findById(user._id).select("-password -refreshToken");
+  return res.status(200).json(new ApiResponse(200,updatedUserCoverImage,"Cover image updated successfully"));
+});
 
 
-export {registerUser,loginUser,logout,refreshAccessToken}
+export {registerUser,loginUser,logout,refreshAccessToken,getCurrentUser,changeCurrentPassword,updateAccoutDetails,updateUserAvatar,UpdateCoverImage};
