@@ -144,6 +144,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
     );
 });
 
+
 const logout=asyncHandler(async(req,res,next)=>{
   await User.findOneAndUpdate(req.user?._id,{
     $set:{
@@ -326,5 +327,11 @@ const UpdateCoverImage = asyncHandler(async (req, res, next) => {
   return res.status(200).json(new ApiResponse(200,updatedUserCoverImage,"Cover image updated successfully"));
 });
 
-
+const getUserChannelProfile = asyncHandler(async (req, res, next) => {
+  const {username}=req.params;
+  if(!username?.trim()) 
+  {
+    throw new ApiError(400,"username is required")
+  } 
+});
 export {registerUser,loginUser,logout,refreshAccessToken,getCurrentUser,changeCurrentPassword,updateAccoutDetails,updateUserAvatar,UpdateCoverImage};
